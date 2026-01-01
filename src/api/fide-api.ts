@@ -10,7 +10,7 @@ export class FideApiService {
             });
 
             if (response.status === 200) {
-                const data = response.json;
+                const data = response.json as { classical_rating?: number };
                 // parsed response usually has classical_rating, rapid_rating, blitz_rating
                 return data.classical_rating || 0;
             }
@@ -28,7 +28,7 @@ export class FideApiService {
             });
 
             if (response.status === 200) {
-                const data = response.json;
+                const data = response.json as { name?: string; classical_rating?: number };
                 return {
                     name: data.name || "Unknown",
                     rating: data.classical_rating || 0
@@ -40,7 +40,7 @@ export class FideApiService {
         return null;
     }
 
-    static async getFullPlayerInfo(fideId: string): Promise<any> {
+    static async getFullPlayerInfo(fideId: string): Promise<Record<string, unknown> | null> {
         if (!fideId) return null;
         try {
             const response = await requestUrl({
@@ -49,7 +49,7 @@ export class FideApiService {
             });
 
             if (response.status === 200) {
-                return response.json;
+                return response.json as Record<string, unknown>;
             }
         } catch (error) {
             console.error("Failed to fetch FIDE data", error);

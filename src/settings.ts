@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import MyPlugin from "./main";
+import ChessVaultManager from "./main";
 
 export interface ChessVaultSettings {
 	gamesFolder: string;
@@ -20,9 +20,9 @@ export const DEFAULT_SETTINGS: ChessVaultSettings = {
 }
 
 export class ChessVaultSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: ChessVaultManager;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: ChessVaultManager) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -33,7 +33,7 @@ export class ChessVaultSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Games Folder')
+			.setName('Games folder')
 			.setDesc('Folder where your chess games will be stored')
 			.addText(text => text
 				.setPlaceholder('Games')
@@ -44,7 +44,7 @@ export class ChessVaultSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Tournaments Folder')
+			.setName('Tournaments folder')
 			.setDesc('Folder where your tournaments will be stored')
 			.addText(text => text
 				.setPlaceholder('Tournaments')
@@ -55,8 +55,8 @@ export class ChessVaultSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('FIDE ID')
-			.setDesc('Your FIDE ID')
+			.setName('Player identification')
+			.setDesc('Your player identification')
 			.addText(text => text
 				.setPlaceholder('12345678')
 				.setValue(this.plugin.settings.fideId)
@@ -66,7 +66,7 @@ export class ChessVaultSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('K-Factor')
+			.setName('K-factor')
 			.setDesc('The development coefficient used for rating calculations (usually 40, 20 or 10)')
 			.addText(text => text
 				.setPlaceholder('20')
@@ -77,10 +77,10 @@ export class ChessVaultSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Lichess Username')
-			.setDesc('Your Lichess username')
+			.setName('Lichess username')
+			.setDesc('Your lichess username')
 			.addText(text => text
-				.setPlaceholder('MagnusCarlsen')
+				.setPlaceholder('Username')
 				.setValue(this.plugin.settings.lichessUsername)
 				.onChange(async (value) => {
 					this.plugin.settings.lichessUsername = value;
@@ -88,10 +88,10 @@ export class ChessVaultSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Chess.com Username')
-			.setDesc('Your Chess.com username')
+			.setName('Chess.com username')
+			.setDesc('Your chess.com username')
 			.addText(text => text
-				.setPlaceholder('MagnusCarlsen')
+				.setPlaceholder('Username')
 				.setValue(this.plugin.settings.chessComUsername)
 				.onChange(async (value) => {
 					this.plugin.settings.chessComUsername = value;

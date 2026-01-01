@@ -1,4 +1,4 @@
-import { App, Modal, Setting, TFile, TextAreaComponent } from 'obsidian';
+import { App, Modal, Setting, TFile } from 'obsidian';
 
 export interface GameData {
     tournament: string;
@@ -35,7 +35,7 @@ export class GameModal extends Modal {
 
     onOpen() {
         const { contentEl } = this;
-        contentEl.createEl('h2', { text: 'Log Tournament Game' });
+        contentEl.createEl('h2', { text: 'Log tournament game' });
 
         new Setting(contentEl)
             .setName('Tournament')
@@ -48,14 +48,14 @@ export class GameModal extends Modal {
             });
 
         new Setting(contentEl)
-            .setName('Opponent FIDE ID')
+            .setName('Opponent player identification')
             .addText(text => text
                 .onChange(value => {
                     this.result.opponentFideId = value;
                 }));
 
         new Setting(contentEl)
-            .setName('Round Number')
+            .setName('Round number')
             .addText(text => text
                 .setValue(String(this.result.round))
                 .onChange(value => {
@@ -84,7 +84,7 @@ export class GameModal extends Modal {
 
         new Setting(contentEl)
             .addButton(btn => btn
-                .setButtonText('Log Game')
+                .setButtonText('Log game')
                 .setCta()
                 .onClick(() => {
                     this.close();

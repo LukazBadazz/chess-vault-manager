@@ -30,17 +30,17 @@ export class TournamentModal extends Modal {
 
     onOpen() {
         const { contentEl } = this;
-        contentEl.createEl('h2', { text: 'Log Tournament' });
+        contentEl.createEl('h2', { text: 'Log tournament' });
 
         new Setting(contentEl)
-            .setName('Tournament Name')
+            .setName('Tournament name')
             .addText(text => text
                 .onChange(value => {
                     this.result.name = value;
                 }));
 
         new Setting(contentEl)
-            .setName('Start Date')
+            .setName('Start date')
             .addText(text => text
                 .setValue(this.result.date_start)
                 .onChange(value => {
@@ -55,7 +55,7 @@ export class TournamentModal extends Modal {
                 }));
 
         new Setting(contentEl)
-            .setName('Time Control')
+            .setName('Time control')
             .addDropdown(dropdown => dropdown
                 .addOption('Standard', 'Standard')
                 .addOption('Rapid', 'Rapid')
@@ -66,15 +66,15 @@ export class TournamentModal extends Modal {
                 }));
 
         new Setting(contentEl)
-            .setName('Time Control Details')
-            .setDesc('e.g. 90m + 30s')
+            .setName('Time control details')
+            .setDesc('E.g. 90m + 30s')
             .addText(text => text
                 .onChange(value => {
                     this.result.time_control_details = value;
                 }));
 
         new Setting(contentEl)
-            .setName('Total Rounds')
+            .setName('Total rounds')
             .addText(text => text
                 .setValue(String(this.result.total_rounds))
                 .onChange(value => {
@@ -82,7 +82,7 @@ export class TournamentModal extends Modal {
                 }));
 
         new Setting(contentEl)
-            .setName('Tournament Link')
+            .setName('Tournament link')
             .addText(text => text
                 .onChange(value => {
                     this.result.link = value;
@@ -90,7 +90,7 @@ export class TournamentModal extends Modal {
 
         new Setting(contentEl)
             .addButton(btn => btn
-                .setButtonText('Create Tournament')
+                .setButtonText('Create tournament')
                 .setCta()
                 .onClick(() => {
                     this.close();
