@@ -81,10 +81,6 @@ Manage your chess journey directly within Obsidian. Log tournaments, track your 
 
 Contributions are welcome! Please feel free to submit a Pull Request or open an issue for feature requests.
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ---
 
 *Crafted for chess lovers by [Lukas Badazz](https://github.com/LukazBadazz)*
