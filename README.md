@@ -1,90 +1,91 @@
-# Obsidian Sample Plugin
+# ♟️ Chess Vault Manager
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Manage your chess journey directly within Obsidian. Log tournaments, track your rating, and analyze games with ease.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+[![Obsidian Plugin](https://img.shields.io/badge/Obsidian-Plugin-purple.svg)](https://obsidian.md)
+[![Release](https://img.shields.io/github/v/release/LukazBadazz/chess-vault-manager?label=Download)](https://github.com/LukazBadazz/chess-vault-manager/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## 🚀 Overview
 
-## First time developing plugins?
+**Chess Vault Manager** is an Obsidian plugin designed for chess players who want to maintain a structured training diary and game database. It bridges the gap between your over-the-board (OTB) tournaments, online games, and your personal knowledge base.
 
-Quick starting guide for new plugin devs:
+---
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## ✨ Key Features
 
-## Releasing new releases
+### 🏆 Tournament Management
+*   **Structured Notes**: Create dedicated tournament notes with detailed frontmatter (location, dates, time control).
+*   **Live Controls**: Use the interactive `chess-tournament-controls` block to start and end tournaments.
+*   **Auto-Stats**: Automatically calculates your total score, performance rating, and ELO change (using FIDE formulas) based on logged games.
+*   **Dataview Integration**: Built-in templates to list all games within a tournament.
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+### 📝 Game Logging
+*   **Over-the-Board (OTB)**: Log your tournament games with opponent FIDE ID lookups.
+*   **Online Integration**: Instantly import your Lichess games via URL.
+*   **Interactive Boards**: Deep integration with the [Chess Study](https://github.com/Chess-Study/obsidian-chess-study) plugin allows for interactive move-by-move analysis directly in your notes.
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+### 🌐 API Integrations
+*   **FIDE Lookup**: Automatically fetches player names and ratings using the FIDE API.
+*   **Lichess Import**: Pull PGNs and game metadata directly from Lichess.
 
-## Adding your plugin to the community plugin list
+---
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+## 🛠️ Setup & Configuration
 
-## How to use
+1.  **Install the plugin** via community plugins or manual installation.
+2.  **Configure Folders**: Set your preferred folders for Games and Tournaments in the settings.
+3.  **Identify Yourself**:
+    *   Enter your **FIDE ID** for automatic OTB rating tracking.
+    *   Enter your **Lichess/Chess.com usernames** to ensure games are logged from your perspective.
+4.  **Set K-Factor**: Adjust the development coefficient for rating calculations (default is 20).
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+---
 
-## Manually installing the plugin
+## 📖 Usage
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+### Logging a Tournament
+1.  Run the command `Chess Vault Manager: Log tournament`.
+2.  Enter the tournament details in the modal.
+3.  In the generated note, click **Start tournament** to begin tracking.
 
-## Improve code quality with eslint
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
+### Logging a Game
+1.  Run `Chess Vault Manager: Log tournament game`.
+2.  Select an active tournament.
+3.  Enter the round, opponent info, and paste the PGN.
+4.  The plugin will generate a game note and update your tournament stats.
 
-## Funding URL
+### Import Online Games
+1.  Run `Chess Vault Manager: Log online game`.
+2.  Paste the Lichess game URL.
+3.  Review your analysis in the newly created note!
 
-You can include funding URLs where people who use your plugin can financially support it.
+---
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+## 🏗️ Development
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+### Local Setup
+1.  Clone the repository.
+2.  Run `npm install`.
+3.  Run `npm run dev` to start the build in watch mode.
+4.  Copy `main.js`, `manifest.json`, and `styles.css` to your vault's plugin folder: `.obsidian/plugins/chess-vault-manager/`.
 
-If you have multiple URLs, you can also do:
+### Releasing
+1.  Update version in `manifest.json`.
+2.  Run `npm run version-bump` to update `package.json` and `versions.json`.
+3.  Create a GitHub release with the compiled files.
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+---
 
-## API Documentation
+## 🤝 Contributing
 
-See https://docs.obsidian.md
+Contributions are welcome! Please feel free to submit a Pull Request or open an issue for feature requests.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+*Crafted for chess lovers by [Lukas Badazz](https://github.com/LukazBadazz)*
+
