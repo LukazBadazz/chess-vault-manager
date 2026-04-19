@@ -4,18 +4,16 @@ import ChessVaultManager from "./main";
 export interface ChessVaultSettings {
 	gamesFolder: string;
 	tournamentsFolder: string;
+	playerName: string;
 	fideId: string;
-	lichessUsername: string;
-	chessComUsername: string;
 	kFactor: number;
 }
 
 export const DEFAULT_SETTINGS: ChessVaultSettings = {
 	gamesFolder: 'Games',
 	tournamentsFolder: 'Tournaments',
+	playerName: '',
 	fideId: '',
-	lichessUsername: '',
-	chessComUsername: '',
 	kFactor: 20
 }
 
@@ -55,10 +53,17 @@ export class ChessVaultSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Player identification')
-			.setDesc('Your player identification')
+			.setName('Player Identification')
+			.setDesc('Your name and FIDE ID for auto-detecting perspective in PGNs')
 			.addText(text => text
-				.setPlaceholder('12345678')
+				.setPlaceholder('Name (e.g. Magnus Carlsen)')
+				.setValue(this.plugin.settings.playerName)
+				.onChange(async (value) => {
+					this.plugin.settings.playerName = value;
+					await this.plugin.saveSettings();
+				}))
+			.addText(text => text
+				.setPlaceholder('FIDE ID (e.g. 12345678)')
 				.setValue(this.plugin.settings.fideId)
 				.onChange(async (value) => {
 					this.plugin.settings.fideId = value;
@@ -76,26 +81,6 @@ export class ChessVaultSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		new Setting(containerEl)
-			.setName('Lichess username')
-			.setDesc('Your lichess username')
-			.addText(text => text
-				.setPlaceholder('Username')
-				.setValue(this.plugin.settings.lichessUsername)
-				.onChange(async (value) => {
-					this.plugin.settings.lichessUsername = value;
-					await this.plugin.saveSettings();
-				}));
 
-		new Setting(containerEl)
-			.setName('Chess.com username')
-			.setDesc('Your chess.com username')
-			.addText(text => text
-				.setPlaceholder('Username')
-				.setValue(this.plugin.settings.chessComUsername)
-				.onChange(async (value) => {
-					this.plugin.settings.chessComUsername = value;
-					await this.plugin.saveSettings();
-				}));
 	}
 }

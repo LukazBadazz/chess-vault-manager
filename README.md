@@ -83,5 +83,5 @@ Contributions are welcome! Please feel free to submit a Pull Request or open an 
 
 ---
 
-*Crafted for chess lovers by [Lukas Badazz](https://github.com/LukazBadazz)*
+*Crafted for chess lovers by [LukasBadazz](https://github.com/LukazBadazz)*
 

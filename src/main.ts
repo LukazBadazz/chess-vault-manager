@@ -5,8 +5,7 @@ import { FideApiService } from "./api/fide-api";
 import { GameModal, GameData } from "./modals/game-modal";
 import { Chess } from "chess.js";
 import { ChessUtils } from "./utils/chess-utils";
-import { OnlineGameModal } from "./modals/online-game-modal";
-import { LichessApiService } from "./api/lichess-api";
+import { ChessboardView } from "./chess/ChessboardView";
 
 interface TournamentFrontmatter {
 	status?: string;
@@ -24,7 +23,7 @@ interface GameFrontmatter {
 	opponent_rating?: number;
 }
 
-export default class ChessVaultManager extends Plugin {
+export default class MyPlugin extends Plugin {
 	settings: ChessVaultSettings;
 
 	async onload() {
@@ -32,6 +31,25 @@ export default class ChessVaultManager extends Plugin {
 
 		this.registerMarkdownCodeBlockProcessor("chess-tournament-controls", (source, el, ctx) => {
 			void this.processTournamentControls(source, el, ctx);
+		});
+
+		this.registerMarkdownCodeBlockProcessor("chess-view", (source, el, ctx) => {
+			const pgn = source.trim();
+			// Or parse params from source if it's YAML-like, but standard is PGN body
+			// If the block contains "pgn: ...", parse it.
+			// But for simplicity, let's look for "pgn:" or assume raw PGN.
+			// Existing `chessStudy` used `chessStudyId: ...`.
+			// Let's support `pgn: ...` or just the PGN content.
+
+			// Allow parsing PGN from block
+			let pgnContent = source.trim();
+			if (pgnContent.startsWith('pgn:')) {
+				pgnContent = pgnContent.replace('pgn:', '').trim();
+			}
+
+			const section = ctx.getSectionInfo(el);
+			const blockId = `${ctx.sourcePath}:${section?.lineStart || 0}`;
+			ctx.addChild(new ChessboardView(el, pgnContent, blockId, this.settings));
 		});
 
 		this.addCommand({
@@ -92,27 +110,7 @@ export default class ChessVaultManager extends Plugin {
 			}
 		});
 
-		this.addCommand({
-			id: 'log-online-game',
-			name: 'Log online game',
-			callback: () => {
-				new OnlineGameModal(this.app, async (url) => {
-					const gameId = LichessApiService.extractGameId(url);
-					if (!gameId) {
-						new Notice('Invalid game URL!');
-						return;
-					}
 
-					new Notice('Fetching game data...');
-					const pgn = await LichessApiService.getPgn(gameId);
-					if (pgn) {
-						void this.createOnlineGameNote(pgn, 'Lichess');
-					} else {
-						new Notice('Failed to fetch game data.');
-					}
-				}).open();
-			}
-		});
 
 		this.addSettingTab(new ChessVaultSettingTab(this.app, this));
 	}
@@ -373,23 +371,9 @@ SORT date ASC
 			myResult = 'Unknown';
 		}
 
-		// Generate Game ID and JSON for chess-study
+
+		// Generate Game ID
 		const gameId = this.generateRandomId(20);
-		const chessStudyJson = this.generateChessStudyJson(chess);
-
-		// Write JSON to chess-study storage
-		const configDir = this.app.vault.configDir;
-		const storagePath = `${configDir}/plugins/chess-study/storage`;
-
-		try {
-			if (!(await this.app.vault.adapter.exists(storagePath))) {
-				await this.app.vault.adapter.mkdir(storagePath);
-			}
-			await this.app.vault.adapter.write(`${storagePath}/${gameId}.json`, JSON.stringify(chessStudyJson, null, 2));
-		} catch (error) {
-			new Notice(`Failed to write chess-study data: ${String(error)}`);
-			console.error(error);
-		}
 
 		const gamesFolder = this.settings.gamesFolder;
 		if (!(await this.app.vault.adapter.exists(gamesFolder))) {
@@ -422,8 +406,8 @@ eco: "${eco}"
 
 ### 🧩 The Board
 
-\`\`\`chessStudy
-chessStudyId: ${gameId}
+\`\`\`chess-view
+pgn: ${pgn}
 \`\`\`
 
 ### 📝 Analysis
@@ -453,197 +437,13 @@ chessStudyId: ${gameId}
 				}, 1000);
 			}
 		} catch (error) {
-			new Notice(`Failed to create game note: ${String(error)}`);
+			new Notice(`Failed to create game note: ${error}`);
 			console.error(error);
 		}
 	}
 
-	async createOnlineGameNote(pgn: string, platform: 'Lichess' | 'ChessCom') {
-		// Parse PGN
-		const chess = new Chess();
-		try {
-			chess.loadPgn(pgn);
-		} catch {
-			new Notice('Invalid pgn!');
-			return;
-		}
 
-		const header = chess.getHeaders();
-		const result = header.Result || '*';
-		const eco = header.ECO || '';
-		const opening = header.Opening || '';
-		const white = header['White'] || 'Unknown';
-		const black = header['Black'] || 'Unknown';
-		const whiteElo = parseInt(header['WhiteElo'] ?? '0') || 0;
-		const blackElo = parseInt(header['BlackElo'] ?? '0') || 0;
 
-		let date = header['Date'];
-		if (!date || date.includes("?") || date.length < 10) {
-			date = new Date().toISOString().split('T')[0];
-		} else {
-			date = date.replace(/\./g, '-');
-		}
-
-		// Determine perspective
-		let myColor: 'White' | 'Black' = 'White';
-		let opponentName = black;
-		let opponentRating = blackElo;
-		let myRating = whiteElo;
-
-		const myUsername = platform === 'Lichess' ? this.settings.lichessUsername : this.settings.chessComUsername;
-
-		if (!myUsername) {
-			new Notice(`Please set your ${platform} username in settings first!`);
-			return;
-		}
-
-		if (black.toLowerCase() === myUsername.toLowerCase()) {
-			myColor = 'Black';
-			opponentName = white;
-			opponentRating = whiteElo;
-			myRating = blackElo;
-		} else if (white.toLowerCase() !== myUsername.toLowerCase()) {
-			new Notice(`Lichess username "${myUsername}" does not match White (${white}) or Black (${black})`);
-			// Continue anyway, defaulting to White perspective? 
-			// Or stop? The user likely wants to log THEIR game.
-			// Let's just warn and default to White for now, but usually it should match.
-		}
-
-		// Calculate Results
-		let myResult = 'Draw';
-		if (result === '1-0') {
-			myResult = myColor === 'White' ? 'Win' : 'Loss';
-		} else if (result === '0-1') {
-			myResult = myColor === 'Black' ? 'Win' : 'Loss';
-		} else if (result === '1/2-1/2') {
-			myResult = 'Draw';
-		} else {
-			myResult = 'Unknown';
-		}
-
-		// Generate Game ID and JSON for chess-study
-		const studyGameId = this.generateRandomId(20);
-		const chessStudyJson = this.generateChessStudyJson(chess);
-
-		// Write JSON to chess-study storage
-		const configDir = this.app.vault.configDir;
-		const storagePath = `${configDir}/plugins/chess-study/storage`;
-
-		try {
-			if (!(await this.app.vault.adapter.exists(storagePath))) {
-				await this.app.vault.adapter.mkdir(storagePath);
-			}
-			await this.app.vault.adapter.write(`${storagePath}/${studyGameId}.json`, JSON.stringify(chessStudyJson, null, 2));
-		} catch (error) {
-			new Notice(`Failed to write chess-study data: ${String(error)}`);
-			console.error(error);
-		}
-
-		const platformFolder = `${this.settings.gamesFolder}/${platform}`;
-		if (!(await this.app.vault.adapter.exists(platformFolder))) {
-			// Create Games folder if it doesn't exist, then platform folder
-			if (!(await this.app.vault.adapter.exists(this.settings.gamesFolder))) {
-				await this.app.vault.createFolder(this.settings.gamesFolder);
-			}
-			await this.app.vault.createFolder(platformFolder);
-		}
-
-		// Sanitize Name
-		const safeOpponentName = opponentName.replace(/[^a-zA-Z0-9]/g, '_');
-		const filename = `${platformFolder}/${date}-${safeOpponentName}.md`;
-
-		const content = `---
-type: online-game
-platform: ${platform}
-result: "${result}"
-my_color: "${myColor}"
-my_result: "${myResult}"
-my_rating: ${myRating}
-opponent: "${opponentName}"
-opponent_rating: ${opponentRating}
-date: ${date}
-tags:
-  - chess/games
-  - chess/online
-  - chess/${platform.toLowerCase()}
-  - chess/${myResult.toLowerCase()}
-opening: "${opening}"
-eco: "${eco}"
----
-
-## ♟️ vs ${opponentName} (${myResult})
-
-### 🧩 The Board
-
-\`\`\`chessStudy
-chessStudyId: ${studyGameId}
-\`\`\`
-
-### 📝 Analysis
-- **Key Moment:** 
-`;
-
-		try {
-			// Check if file already exists
-			if (await this.app.vault.adapter.exists(filename)) {
-				new Notice('Game already logged!');
-				return;
-			}
-			const file = await this.app.vault.create(filename, content);
-			const leaf = this.app.workspace.getLeaf(false);
-			if (leaf) {
-				await leaf.openFile(file);
-			}
-			new Notice(`${platform} game logged successfully!`);
-		} catch (error) {
-			new Notice(`Failed to create game note: ${String(error)}`);
-			console.error(error);
-		}
-	}
-
-	generateChessStudyJson(chess: Chess): Record<string, unknown> {
-		const history = chess.history({ verbose: true });
-		const headers = chess.getHeaders();
-		const rootFEN = headers.FEN || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-		const moves = [];
-		const replay = new Chess(rootFEN);
-
-		for (const move of history) {
-			const before = replay.fen();
-			const result = replay.move(move.san);
-			const after = replay.fen();
-
-			if (result) {
-				moves.push({
-					color: result.color,
-					piece: result.piece,
-					from: result.from,
-					to: result.to,
-					san: result.san,
-					// @ts-ignore - flags is deprecated in chess.js but still useful here
-					// eslint-disable-next-line @typescript-eslint/no-deprecated
-					flags: result.flags,
-					lan: result.from + result.to,
-					before: before,
-					after: after,
-					moveId: this.generateRandomId(),
-					variants: [],
-					shapes: [],
-					comment: null
-				});
-			}
-		}
-
-		return {
-			version: "0.0.2",
-			header: {
-				title: headers.Event || null
-			},
-			moves: moves,
-			rootFEN: rootFEN
-		};
-	}
 
 	generateRandomId(length = 20): string {
 		const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
